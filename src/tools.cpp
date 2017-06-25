@@ -51,6 +51,10 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 	double vy = x_state(3);
 	
 	double pm = sqrt(pow(px,2)+pow(py,2));
+	double px_pm = px/pm;
+	double py_pm = py/pm;
+	double pm2 = pm*pm;
+	double pm3 = pm2*pm;
     
 	if(pm==0) {
         //check division by zero
@@ -59,10 +63,10 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
               0.0, 0.0, 0.0, 0.0;
     } else {
         //compute the Jacobian matrix
-		Hj << px/pm, py/pm, 0.0, 0.0,
-             -py/pow(pm,2), px/pow(pm,2), 0.0, 0.0,
-              py*(vx*py-vy*px)/pow(pm,3), px*(vy*px-vx*py)/pow(pm,3),
-			    px/pm, py/pm;
+		Hj << px_pm, py_pm, 0.0, 0.0,
+             -py/pm2, px/pm2, 0.0, 0.0,
+              py*(vx*py-vy*px)/pm3, px*(vy*px-vx*py)/pm3,
+			    px_pm, py_pm;
     }
 
 	return Hj;

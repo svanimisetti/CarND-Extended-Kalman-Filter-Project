@@ -96,8 +96,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   double noise_ay = 9.0;
   
   //compute the time elapsed between the current and previous measurements
-  float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
+  double dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
 	previous_timestamp_ = measurement_pack.timestamp_;
+
+  if(dt<0.001) return;
 
   ekf_.F_ = MatrixXd(4, 4);
   ekf_.F_ << 1.0, 0.0,  dt, 0.0,
@@ -105,11 +107,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
              0.0, 0.0, 1.0, 0.0,
              0.0, 0.0, 0.0, 1.0;
   
+  double dt2 = dt*dt;
+  double dt3 = dt2*dt;
+  double dt4 = dt2*dt2;
   ekf_.Q_ = MatrixXd(4, 4);
-  ekf_.Q_ << pow(dt,4.0)*noise_ax/4.0, 0.0, pow(dt,3.0)*noise_ax/2.0, 0.0,
-             0.0, pow(dt,4.0)*noise_ay/4.0, 0.0, pow(dt,3.0)*noise_ay/2.0,
-             pow(dt,3.0)*noise_ax/2.0, 0.0, pow(dt,2.0)*noise_ax, 0.0,
-             0.0, pow(dt,3.0)*noise_ay/2.0, 0.0, pow(dt,2.0)*noise_ay;
+  ekf_.Q_ << dt4*noise_ax/4.0, 0.0, dt3*noise_ax/2.0, 0.0,
+             0.0, dt4*noise_ay/4.0, 0.0, dt3*noise_ay/2.0,
+             dt3*noise_ax/2.0, 0.0, dt2*noise_ax, 0.0,
+             0.0, dt3*noise_ay/2.0, 0.0, dt2*noise_ay;
 
   ekf_.Predict();
 
